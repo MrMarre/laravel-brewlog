@@ -161,7 +161,7 @@ function removeFlavor(flavorId: number, type: 'listed' | 'tasted') {
 
                         <!-- Selected Flavor Tags -->
                         <div class="flex flex-wrap gap-2">
-                            <template v-for="flavor in newLog.flavors">
+                            <template v-for="(flavor, index) in newLog.flavors" :key="index">
                                 <span class="rounded-full px-3 py-1 text-white" :class="flavor.type === 'listed' ? 'bg-amber-500' : 'bg-green-500'">
                                     {{ flavors.find((f) => f.id === flavor.flavor_id)?.flavor }} ({{ flavor.type }})
                                     <button
