@@ -116,6 +116,7 @@ function addFlavor(flavorId: number) {
     }
 
     flavorSearch.value = '';
+    dropdownOpen.value = true;
 }
 
 function removeFlavor(flavorId: number, type: FlavorType) {
@@ -175,6 +176,20 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
     const normalizedSeconds = typeof seconds === 'number' ? Math.max(0, Math.min(59, Math.floor(seconds))) : 0;
 
     newLog.value[field] = normalizedMinutes * 60 + normalizedSeconds;
+}
+
+function selectFirstFilteredFlavor() {
+    if (!flavorSearch.value.trim()) {
+        return;
+    }
+
+    const firstFlavor = filteredFlavors.value[0];
+
+    if (!firstFlavor) {
+        return;
+    }
+
+    addFlavor(firstFlavor.id);
 }
 </script>
 
@@ -237,7 +252,7 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
                                 <input
                                     id="brew_method"
                                     v-model="newLog.brew_method"
-                                    placeholder="e.g. V60, AeroPress, French press"
+                                    placeholder="E.g. Pour-over, AeroPress"
                                     class="input-field"
                                     required
                                 />
@@ -341,7 +356,7 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
                                         :value="getTimeMinutes('bloom_time')"
                                         type="number"
                                         min="0"
-                                        placeholder="2"
+                                        placeholder="0"
                                         class="input-field"
                                         @input="updateTimeFromClock('bloom_time', 'minutes', readClockInputValue($event))"
                                     />
@@ -381,7 +396,7 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
                                         :value="getTimeMinutes('brew_time')"
                                         type="number"
                                         min="0"
-                                        placeholder="3"
+                                        placeholder="2"
                                         class="input-field"
                                         @input="updateTimeFromClock('brew_time', 'minutes', readClockInputValue($event))"
                                     />
@@ -391,7 +406,7 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
                                         type="number"
                                         min="0"
                                         max="59"
-                                        placeholder="00"
+                                        placeholder="30"
                                         class="input-field"
                                         @input="updateTimeFromClock('brew_time', 'seconds', readClockInputValue($event))"
                                     />
@@ -455,6 +470,7 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
                                     v-model="flavorSearch"
                                     :placeholder="selectedFlavorType === 'listed' ? 'Search listed flavor notes...' : 'Search tasted flavor notes...'"
                                     class="input-field w-full"
+                                    @keydown.enter.prevent="selectFirstFilteredFlavor"
                                 />
 
                                 <ul
