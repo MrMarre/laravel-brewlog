@@ -7,6 +7,8 @@ import { computed, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Brewlog', href: '/brewlog' }];
 type FlavorType = 'listed' | 'tasted';
+type TimeField = 'bloom_time' | 'brew_time';
+type TimeInputMode = 'seconds' | 'clock';
 
 interface Flavor {
     id: number;
@@ -45,6 +47,7 @@ const createEmptyLog = (): NewLog => ({
 const newLog = ref<NewLog>(createEmptyLog());
 const feedback = ref<{ type: 'success' | 'error'; message: string } | null>(null);
 const selectedFlavorType = ref<FlavorType>('listed');
+const timeInputMode = ref<TimeInputMode>('seconds');
 
 const flavorSearch = ref('');
 const dropdownOpen = ref(false);
@@ -122,6 +125,57 @@ function removeFlavor(flavorId: number, type: FlavorType) {
 function flavorName(flavorId: number) {
     return flavors.value.find((flavor) => flavor.id === flavorId)?.flavor ?? 'Unknown flavor';
 }
+
+function getTimeValue(field: TimeField) {
+    return newLog.value[field];
+}
+
+function getTimeMinutes(field: TimeField) {
+    const value = getTimeValue(field);
+
+    if (typeof value !== 'number' || value < 0) {
+        return '';
+    }
+
+    return Math.floor(value / 60);
+}
+
+function getTimeSeconds(field: TimeField) {
+    const value = getTimeValue(field);
+
+    if (typeof value !== 'number' || value < 0) {
+        return '';
+    }
+
+    return value % 60;
+}
+
+function readClockInputValue(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+
+    if (value === '') {
+        return '';
+    }
+
+    return Number.parseInt(value, 10);
+}
+
+function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawValue: number | '') {
+    const currentMinutes = getTimeMinutes(field);
+    const currentSeconds = getTimeSeconds(field);
+    const minutes = part === 'minutes' ? rawValue : currentMinutes;
+    const seconds = part === 'seconds' ? rawValue : currentSeconds;
+
+    if (minutes === '' && seconds === '') {
+        newLog.value[field] = '';
+        return;
+    }
+
+    const normalizedMinutes = typeof minutes === 'number' ? Math.max(0, Math.floor(minutes)) : 0;
+    const normalizedSeconds = typeof seconds === 'number' ? Math.max(0, Math.min(59, Math.floor(seconds))) : 0;
+
+    newLog.value[field] = normalizedMinutes * 60 + normalizedSeconds;
+}
 </script>
 
 <template>
@@ -198,6 +252,41 @@ function flavorName(flavorId: number) {
                             </p>
                         </div>
 
+                        <div
+                            class="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40"
+                        >
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Time input format</span>
+                            <div class="flex gap-2">
+                                <button
+                                    type="button"
+                                    class="rounded-full px-3 py-1.5 text-sm font-medium transition-colors"
+                                    :class="
+                                        timeInputMode === 'seconds'
+                                            ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+                                            : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                                    "
+                                    @click="timeInputMode = 'seconds'"
+                                >
+                                    Seconds
+                                </button>
+                                <button
+                                    type="button"
+                                    class="rounded-full px-3 py-1.5 text-sm font-medium transition-colors"
+                                    :class="
+                                        timeInputMode === 'clock'
+                                            ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+                                            : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                                    "
+                                    @click="timeInputMode = 'clock'"
+                                >
+                                    mm:ss
+                                </button>
+                            </div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">
+                                {{ timeInputMode === 'seconds' ? 'Enter total seconds directly.' : 'Enter minutes and seconds, such as 2m 30s.' }}
+                            </span>
+                        </div>
+
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2 space-x-2">
                                 <label for="coffee_weight" class="text-sm font-medium text-gray-700 dark:text-gray-300">Coffee weight (g)</label>
@@ -228,8 +317,11 @@ function flavorName(flavorId: number) {
                             </div>
 
                             <div class="space-y-2 space-x-2">
-                                <label for="bloom_time" class="text-sm font-medium text-gray-700 dark:text-gray-300">Bloom time (seconds)</label>
+                                <label for="bloom_time" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Bloom time {{ timeInputMode === 'seconds' ? '(seconds)' : '(mm:ss)' }}
+                                </label>
                                 <input
+                                    v-if="timeInputMode === 'seconds'"
                                     id="bloom_time"
                                     v-model.number="newLog.bloom_time"
                                     type="number"
@@ -237,11 +329,38 @@ function flavorName(flavorId: number) {
                                     placeholder="Optional, e.g. 30"
                                     class="input-field"
                                 />
+                                <div v-else class="grid grid-cols-[3.5rem_auto_1fr] items-center gap-2">
+                                    <input
+                                        id="bloom_time"
+                                        :value="getTimeMinutes('bloom_time')"
+                                        type="number"
+                                        min="0"
+                                        placeholder="2"
+                                        class="input-field"
+                                        @input="updateTimeFromClock('bloom_time', 'minutes', readClockInputValue($event))"
+                                    />
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">:</span>
+                                    <input
+                                        :value="getTimeSeconds('bloom_time')"
+                                        type="number"
+                                        min="0"
+                                        max="59"
+                                        placeholder="30"
+                                        class="input-field"
+                                        @input="updateTimeFromClock('bloom_time', 'seconds', readClockInputValue($event))"
+                                    />
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ timeInputMode === 'seconds' ? 'Optional. Enter total seconds.' : 'Optional. Example: 2 minutes 30 seconds.' }}
+                                </p>
                             </div>
 
                             <div class="space-y-2 space-x-2">
-                                <label for="brew_time" class="text-sm font-medium text-gray-700 dark:text-gray-300">Total brew time (seconds)</label>
+                                <label for="brew_time" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Total brew time {{ timeInputMode === 'seconds' ? '(seconds)' : '(mm:ss)' }}
+                                </label>
                                 <input
+                                    v-if="timeInputMode === 'seconds'"
                                     id="brew_time"
                                     v-model.number="newLog.brew_time"
                                     type="number"
@@ -250,6 +369,30 @@ function flavorName(flavorId: number) {
                                     class="input-field"
                                     required
                                 />
+                                <div v-else class="grid grid-cols-[3.5rem_auto_1fr] items-center gap-2">
+                                    <input
+                                        id="brew_time"
+                                        :value="getTimeMinutes('brew_time')"
+                                        type="number"
+                                        min="0"
+                                        placeholder="3"
+                                        class="input-field"
+                                        @input="updateTimeFromClock('brew_time', 'minutes', readClockInputValue($event))"
+                                    />
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">:</span>
+                                    <input
+                                        :value="getTimeSeconds('brew_time')"
+                                        type="number"
+                                        min="0"
+                                        max="59"
+                                        placeholder="00"
+                                        class="input-field"
+                                        @input="updateTimeFromClock('brew_time', 'seconds', readClockInputValue($event))"
+                                    />
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ timeInputMode === 'seconds' ? 'Required. Enter total seconds.' : 'Required. Example: 2 minutes 30 seconds.' }}
+                                </p>
                             </div>
                         </div>
 
