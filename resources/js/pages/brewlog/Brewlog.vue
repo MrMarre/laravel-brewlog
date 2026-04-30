@@ -212,7 +212,13 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2 space-x-2">
                                 <label for="brand_name" class="text-sm font-medium text-gray-700 dark:text-gray-300">Roaster or brand</label>
-                                <input id="brand_name" v-model="newLog.brand_name" placeholder="e.g. Drop Coffee" class="input-field" required />
+                                <input
+                                    id="brand_name"
+                                    v-model="newLog.brand_name"
+                                    placeholder="e.g. Rocket Bean Roasters"
+                                    class="input-field"
+                                    required
+                                />
                             </div>
 
                             <div class="space-y-2 space-x-2">
@@ -351,7 +357,7 @@ function updateTimeFromClock(field: TimeField, part: 'minutes' | 'seconds', rawV
                                     />
                                 </div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ timeInputMode === 'seconds' ? 'Optional. Enter total seconds.' : 'Optional. Example: 2 minutes 30 seconds.' }}
+                                    {{ timeInputMode === 'seconds' ? 'Optional' : 'Optional. Example: 2 minutes 30 seconds.' }}
                                 </p>
                             </div>
 
