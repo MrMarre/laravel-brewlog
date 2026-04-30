@@ -97,11 +97,53 @@ function removeFlavor(flavorId: number, type: 'listed' | 'tasted') {
                         <input v-model="newLog.brand_name" placeholder="Brand Name" class="input-field" required />
                         <input v-model="newLog.product_name" placeholder="Product Name" class="input-field" required />
                         <input v-model="newLog.brew_method" placeholder="Brew Method" class="input-field" required />
-                        <input v-model="newLog.grind_size" placeholder="Grind Size" class="input-field" />
-                        <input v-model.number="newLog.coffee_weight" type="number" step="0.1" placeholder="Coffee (g)" class="input-field" required />
-                        <input v-model.number="newLog.water_weight" type="number" step="0.1" placeholder="Water (g)" class="input-field" required />
-                        <input v-model.number="newLog.bloom_time" type="number" placeholder="Bloom Time (s) if applicable" class="input-field" />
-                        <input v-model.number="newLog.brew_time" type="number" placeholder="Brew Time (s)" class="input-field" required />
+                        <input v-model="newLog.grind_size" placeholder="Grind Size (relative to your grinder)" class="input-field" />
+                        <div class="flex flex-col space-y-2">
+                            <label for="coffee_weight" class="text-gray-700 dark:text-gray-300">Coffee weight (g)</label>
+                            <input
+                                id="coffee_weight"
+                                v-model.number="newLog.coffee_weight"
+                                type="number"
+                                step="0.1"
+                                placeholder="Coffee (g)"
+                                class="input-field"
+                                required
+                            />
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <label for="water_weight" class="text-gray-700 dark:text-gray-300">Water weight (g)</label>
+                            <input
+                                id="water_weight"
+                                v-model.number="newLog.water_weight"
+                                type="number"
+                                step="0.1"
+                                placeholder="Water (g)"
+                                class="input-field"
+                                required
+                            />
+                        </div>
+
+                        <div class="flex flex-col space-y-2">
+                            <label for="bloom_time" class="text-gray-700 dark:text-gray-300">Bloom time (seconds)</label>
+                            <input
+                                id="bloom_time"
+                                v-model.number="newLog.bloom_time"
+                                type="number"
+                                placeholder="Bloom Time (s) if applicable"
+                                class="input-field"
+                            />
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <label for="brew_time" class="text-gray-700 dark:text-gray-300">Total brew time (seconds)</label>
+                            <input
+                                id="brew_time"
+                                v-model.number="newLog.brew_time"
+                                type="number"
+                                placeholder="Brew Time (s)"
+                                class="input-field"
+                                required
+                            />
+                        </div>
                     </div>
 
                     <!-- Flavors -->
