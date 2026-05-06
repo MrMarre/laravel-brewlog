@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('brand_name');
             $table->string('product_name');
             $table->string('brew_method');
-            $table->string('grind_size');
+            $table->string('grind_size')->nullable();
             $table->decimal('coffee_weight', 5, 1);
             $table->decimal('water_weight', 6, 1);
-            $table->integer('bloom_time'); 
+            $table->integer('bloom_time')->nullable(); 
             $table->integer('brew_time');  
             $table->timestamps();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); 

@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Research how to "seed"(?) fkavor_notes.json into flavors table
         Schema::create('flavors', function (Blueprint $table) {
             $table->id();
-            $table->string('flavor');
+            $table->string('flavor')->unique();
             $table->timestamps();
         });
     }
